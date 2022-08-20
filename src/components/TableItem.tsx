@@ -12,11 +12,16 @@ interface Transaction {
 }
 
 export default function TableItem(props: Transaction) {
+  const value = props.value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+ 
   return (
     <Tr>
       <Td>{props.name}</Td>
       <Td isNumeric color={props.type ? "green" : "red"}>
-        {props.type ? `R$ ${props.value}` : `- R$ ${props.value}`}
+        {props.type ? value : `-${value}`}
       </Td>
       <Td>{props.desc}</Td>
       <Td>{props.data}</Td>
