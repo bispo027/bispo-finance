@@ -9,7 +9,7 @@ import {
   HStack,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "./components/Card";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
@@ -23,13 +23,24 @@ interface Transation {
   data: string;
 }
 
+interface Values {
+  expense: number;
+  income: number;
+}
+
 function App() {
+
+  useEffect(()=>{
+    GetAllValue()
+  })
+
+  const [values, setValues] = useState<Values>();
   const [transactions, setTransactions] = useState<Transation[]>([
     {
       id: 1,
       name: "Desenvolvimento de site",
       value: 1200,
-      desc: 'Serviço',
+      desc: "Serviço",
       type: true,
       data: "29/08/2022",
     },
@@ -37,20 +48,35 @@ function App() {
       id: 2,
       name: "Aluguel",
       value: 2200,
-      desc: 'Serviço',
+      desc: "Serviço",
       type: false,
       data: "29/08/2022",
     },
   ]);
 
-  function SetItem(item: Transation) {
+  const SetItem = (item: Transation) => {
     setTransactions([...transactions, item]);
-  }
+  };
 
   const RemoveItem = (id: number) => {
-    const newListTransactions = transactions.filter(item => item.id !== id);
-    setTransactions(newListTransactions)
-  }
+    const newListTransactions = transactions.filter((item) => item.id !== id);
+    setTransactions(newListTransactions);
+  };
+
+  const GetAllValue = () => {
+    let tempValue = {
+      expense: 0,
+      income: 0,
+    };
+    transactions.map((item) => {
+      if (item.type) {
+        tempValue.income += item.value;
+      } else {
+        tempValue.expense += item.value;
+      }
+    });
+    setValues(tempValue);
+  }; 
 
   return (
     <Box
@@ -61,8 +87,8 @@ function App() {
       <VStack>
         <Header />
         <HStack justify="center" pt="40px" spacing="32px">
-          <Card type="Income" value={520} />
-          <Card type="Expense" value={220} />
+          <Card type="Income" value={values?.income || 0} />
+          <Card type="Expense" value={values?.expense || 0} />
           <Card type="Money" value={300} />
         </HStack>
         <SearchBar />
@@ -70,10 +96,10 @@ function App() {
           <Table size="md" w="82vw" variant="simple">
             <Thead>
               <Tr>
-                <Th >Name</Th>
+                <Th>Name</Th>
                 <Th isNumeric>Value</Th>
-                <Th >Description</Th>
-                <Th >Data</Th>
+                <Th>Description</Th>
+                <Th>Data</Th>
                 <Th></Th>
                 <Th></Th>
               </Tr>

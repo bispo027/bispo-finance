@@ -1,5 +1,5 @@
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import { IconButton, Stack, Td, Tr } from "@chakra-ui/react";
+import { IconButton, Td, Tr } from "@chakra-ui/react";
 
 interface Transaction {
   id: number;
