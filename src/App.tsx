@@ -10,12 +10,14 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import env from "react-dotenv";
 import Card from "./components/Card";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import TableItem from "./components/TableItem";
-interface Transation {
-  id: number;
+import { useTransactionsQuery } from "./generated/graphql";
+
+interface Transaction {
   name: string;
   value: number;
   desc: string;
@@ -26,57 +28,42 @@ interface Transation {
 interface Values {
   expense: number;
   income: number;
+  total: number;
 }
 
 function App() {
-
-  useEffect(()=>{
-    GetAllValue()
-  })
+  const [{ data }] = useTransactionsQuery();
+  useEffect(() => {
+    GetAllValue();
+  }, [data]);
 
   const [values, setValues] = useState<Values>();
-  const [transactions, setTransactions] = useState<Transation[]>([
-    {
-      id: 1,
-      name: "Desenvolvimento de site",
-      value: 1200,
-      desc: "Serviço",
-      type: true,
-      data: "29/08/2022",
-    },
-    {
-      id: 2,
-      name: "Aluguel",
-      value: 2200,
-      desc: "Serviço",
-      type: false,
-      data: "29/08/2022",
-    },
-  ]);
 
-  const SetItem = (item: Transation) => {
-    setTransactions([...transactions, item]);
+  const SetItem = (item: Transaction) => {
   };
 
   const RemoveItem = (id: number) => {
-    const newListTransactions = transactions.filter((item) => item.id !== id);
-    setTransactions(newListTransactions);
   };
 
   const GetAllValue = () => {
-    let tempValue = {
+    const newData = {
       expense: 0,
       income: 0,
-    };
-    transactions.map((item) => {
-      if (item.type) {
-        tempValue.income += item.value;
-      } else {
-        tempValue.expense += item.value;
-      }
-    });
-    setValues(tempValue);
-  }; 
+      total: 0,
+    }
+
+    if (data) {
+      data.transactions.forEach((item) => {
+        if (item.type) {
+          newData.income += item.value;
+        } else {
+          newData.expense += item.value;
+        }
+      }),
+      newData.total = newData.income - newData.expense;
+    } 
+    setValues(newData);
+  };
 
   return (
     <Box
@@ -89,7 +76,7 @@ function App() {
         <HStack justify="center" pt="40px" spacing="32px">
           <Card type="Income" value={values?.income || 0} />
           <Card type="Expense" value={values?.expense || 0} />
-          <Card type="Money" value={300} />
+          <Card type="Money" value={values?.total || 0} />
         </HStack>
         <SearchBar />
         <TableContainer>
@@ -105,15 +92,15 @@ function App() {
               </Tr>
             </Thead>
             <Tbody>
-              {transactions.map((item, index) => {
+              {data?.transactions.map((item, index) => {
                 return (
                   <TableItem
                     key={index}
                     id={item.id}
                     name={item.name}
-                    desc={item.desc}
+                    desc={item.description}
                     type={item.type}
-                    data={item.data}
+                    data={item.date}
                     value={item.value}
                     del={RemoveItem}
                   />
