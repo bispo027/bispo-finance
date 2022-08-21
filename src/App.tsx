@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import env from "react-dotenv";
+import { useMutation } from "urql";
 import Card from "./components/Card";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
@@ -20,7 +21,7 @@ import { useTransactionsQuery } from "./generated/graphql";
 interface Transaction {
   name: string;
   value: number;
-  desc: string;
+  description: string;
   type: Boolean;
   data: string;
 }
@@ -40,10 +41,29 @@ function App() {
   const [values, setValues] = useState<Values>();
 
   const SetItem = (item: Transaction) => {
+   
   };
 
-  const RemoveItem = (id: number) => {
-  };
+  const RemoveTransaction = mutation($id: ID!) => {
+    mutation($id: ID!) {
+      deleteTransaction(id: $id) {
+        id
+      }
+    }
+  }
+  
+  const RemoveItem = ({id})=>{
+    const [removeTransactionResult, removeTransaction ] = useMutation(RemoveTransaction);
+
+    const submit = itemRemove => {
+      const variables = { id };
+      updateTodo(variables).then(result => {
+        // The result is almost identical to `updateTodoResult` with the exception
+        // of `result.fetching` not being set.
+        // It is an OperationResult.
+      });
+    };
+  }
 
   const GetAllValue = () => {
     const newData = {
