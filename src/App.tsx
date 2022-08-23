@@ -1,14 +1,7 @@
 import {
   Box,
-  Table,
-  TableContainer,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
   HStack,
   VStack,
-  Center,
   Spinner,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -18,6 +11,7 @@ import SearchBar from "./components/SearchBar";
 import TableItem from "./components/TableItem";
 
 import { gql, useMutation, useQuery } from "@apollo/client";
+import TableTransactions from "./components/TableTransactions";
 
 interface Transaction {
   id: string;
@@ -51,55 +45,49 @@ const GET_TRANSACTION = gql`
   }
 `;
 
-
 function App() {
+
+  useEffect(() => {
+    GetAll();
+  }, []);
+
   const [values, setValues] = useState<Values>();
   const { loading, data } = useQuery<Transactions>(GET_TRANSACTION);
+
+  const GetAll = () => {
+    let newValues = {
+      expense: 0,
+      income: 0,
+      total: 0,
+    }
+
+    data?.transactions.map((item: Transaction) => {
+      if (item.type) {
+        newValues.income += item.value;
+      } else {
+        newValues.expense += item.value;
+      }
+    })
+    newValues.total = newValues.income - newValues.expense;
+    setValues(newValues);
+  }
 
   return (
     <Box
       bgGradient="linear(to-b, #121214 30%, #202024 30%)"
-      h="100vh"
-      w="100vw"
+      h="full"
+      w="full"
     >
       <VStack>
         <Header />
-        <HStack justify="center" pt="40px" spacing="32px">
+        <HStack justify="center" pt="40px" spacing="1.2vw">
           <Card type="Income" value={values?.income || 0} />
           <Card type="Expense" value={values?.expense || 0} />
           <Card type="Money" value={values?.total || 0} />
         </HStack>
         <SearchBar />
         {!loading ? (
-          <TableContainer>
-            <Table size="md" w="82vw" variant="simple">
-              <Thead>
-                <Tr>
-                  <Th>Name</Th>
-                  <Th isNumeric>Value</Th>
-                  <Th>Description</Th>
-                  <Th>Data</Th>
-                  <Th></Th>
-                  <Th></Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {data?.transactions.map((item: Transaction, index: number) => {
-                  return (
-                    <TableItem
-                      key={index}
-                      id={item.id}
-                      name={item.name}
-                      desc={item.description}
-                      type={item.type}
-                      data={item.data}
-                      value={item.value}
-                    />
-                  );
-                })}
-              </Tbody>
-            </Table>
-          </TableContainer>
+          <TableTransactions transactions={data?.transactions || []} />
         ) : (
           <Spinner
             thickness="4px"
