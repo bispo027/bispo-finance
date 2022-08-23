@@ -8,22 +8,28 @@ import {
   Tbody,
   HStack,
   VStack,
+  Center,
+  Spinner,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import env from "react-dotenv";
-import { useMutation } from "urql";
 import Card from "./components/Card";
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import TableItem from "./components/TableItem";
-import { useTransactionsQuery } from "./generated/graphql";
+
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 interface Transaction {
+  id: string;
   name: string;
   value: number;
   description: string;
   type: Boolean;
   data: string;
+}
+
+interface Transactions {
+  transactions: Transaction[];
 }
 
 interface Values {
@@ -32,58 +38,23 @@ interface Values {
   total: number;
 }
 
+const GET_TRANSACTION = gql`
+  query {
+    transactions {
+      id
+      name
+      type
+      value
+      date
+      description
+    }
+  }
+`;
+
+
 function App() {
-  const [{ data }] = useTransactionsQuery();
-  useEffect(() => {
-    GetAllValue();
-  }, [data]);
-
   const [values, setValues] = useState<Values>();
-
-  const SetItem = (item: Transaction) => {
-   
-  };
-
-  const RemoveTransaction = mutation($id: ID!) => {
-    mutation($id: ID!) {
-      deleteTransaction(id: $id) {
-        id
-      }
-    }
-  }
-  
-  const RemoveItem = ({id})=>{
-    const [removeTransactionResult, removeTransaction ] = useMutation(RemoveTransaction);
-
-    const submit = itemRemove => {
-      const variables = { id };
-      updateTodo(variables).then(result => {
-        // The result is almost identical to `updateTodoResult` with the exception
-        // of `result.fetching` not being set.
-        // It is an OperationResult.
-      });
-    };
-  }
-
-  const GetAllValue = () => {
-    const newData = {
-      expense: 0,
-      income: 0,
-      total: 0,
-    }
-
-    if (data) {
-      data.transactions.forEach((item) => {
-        if (item.type) {
-          newData.income += item.value;
-        } else {
-          newData.expense += item.value;
-        }
-      }),
-      newData.total = newData.income - newData.expense;
-    } 
-    setValues(newData);
-  };
+  const { loading, data } = useQuery<Transactions>(GET_TRANSACTION);
 
   return (
     <Box
@@ -99,36 +70,45 @@ function App() {
           <Card type="Money" value={values?.total || 0} />
         </HStack>
         <SearchBar />
-        <TableContainer>
-          <Table size="md" w="82vw" variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Name</Th>
-                <Th isNumeric>Value</Th>
-                <Th>Description</Th>
-                <Th>Data</Th>
-                <Th></Th>
-                <Th></Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {data?.transactions.map((item, index) => {
-                return (
-                  <TableItem
-                    key={index}
-                    id={item.id}
-                    name={item.name}
-                    desc={item.description}
-                    type={item.type}
-                    data={item.date}
-                    value={item.value}
-                    del={RemoveItem}
-                  />
-                );
-              })}
-            </Tbody>
-          </Table>
-        </TableContainer>
+        {!loading ? (
+          <TableContainer>
+            <Table size="md" w="82vw" variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                  <Th isNumeric>Value</Th>
+                  <Th>Description</Th>
+                  <Th>Data</Th>
+                  <Th></Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {data?.transactions.map((item: Transaction, index: number) => {
+                  return (
+                    <TableItem
+                      key={index}
+                      id={item.id}
+                      name={item.name}
+                      desc={item.description}
+                      type={item.type}
+                      data={item.data}
+                      value={item.value}
+                    />
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Spinner
+            thickness="4px"
+            speed="0.65s"
+            emptyColor="gray.200"
+            color="blue.500"
+            size="xl"
+          />
+        )}
       </VStack>
     </Box>
   );

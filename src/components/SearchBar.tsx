@@ -3,7 +3,7 @@ import { Button, HStack, Input } from "@chakra-ui/react"
 
 export default function SearchBar() {
   return (
-    <HStack spacing='16px' pt='34px' w='1112px'>
+    <HStack spacing='16px' pt='34px'  w='1112px'>
       <Input
         placeholder="Search for a transaction"
         size='md'

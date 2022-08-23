@@ -1,9 +1,0 @@
-query transactions {
-  transactions {
-    name
-    type
-    value
-    date
-    description
-  }
-}
