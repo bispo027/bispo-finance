@@ -2,7 +2,7 @@ import { Box, Button, HStack, Image, Text } from '@chakra-ui/react'
 
 export default function Header() {
   return (
-    <Box pt='40px' w='1112px'>
+    <Box pt='40px' w='80vw'>
       <HStack justifyContent='space-between'>
         <HStack spacing={2}>
           <Image src="../../public/Logo.svg" />
